@@ -17,7 +17,7 @@ def load_df_from_csv(path: os.path) -> pd.DataFrame:
 
 def clean_shop_df(dataframe: pd.DataFrame) -> pd.DataFrame:
     """Oczyszczam tabelę sklepów z wierszy które zawierają puste wartości we wskazanych kolumnach"""
-    temp = dataframe.dropna(subset=['data_wstapienia', 'Nazwa_Spolki', 'Standard_Sklepu', 'Format_Sklepu'])
+    temp = dataframe.dropna(subset=['data_wstapienia', 'Nazwa_Spolki', 'Format_Sklepu'])
     return temp
 
 
@@ -25,9 +25,7 @@ def format_and_fill_shop_list_df(dataframe: pd.DataFrame) -> pd.DataFrame:
     """Funkcja formatuje poszczególne kolumny jako kategorie oraz dodaje nowe kolumny na podstawie istniejących
     kolumn"""
     dataframe['Nazwa_Spolki'] = dataframe['Nazwa_Spolki'].astype('category')
-    dataframe['Standard_Sklepu'] = dataframe['Standard_Sklepu'].astype('category')
     dataframe['Format_Sklepu'] = dataframe['Format_Sklepu'].astype('category')
-    dataframe['wojewodztwo'] = dataframe['wojewodztwo'].astype('category')
     dataframe['data_wstapienia'] = pd.to_datetime(dataframe['data_wstapienia'])
     dataframe['data_wystapienia'] = pd.to_datetime(dataframe['data_wystapienia'])
     dataframe['ws_year'] = pd.DatetimeIndex(dataframe['data_wstapienia']).year
@@ -63,15 +61,15 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
     temp_df['data_wystapienia'] = temp_df['data_wystapienia'].astype(object).where(
         temp_df['data_wystapienia'].notnull(), None)
     (max_row, max_col) = temp_df.shape
-    kolumny = ['ID Sklepu', 'Nazwa Sklepu', 'Nazwa Spółki', 'Standard Sklepu', 'Format sklepu', 'Województwo',
+    kolumny = ['ID Sklepu', 'Nazwa Sklepu', 'Nazwa Spółki', 'Format sklepu',
                'Powierzchnia Sali', 'Powierzchnia Ogółem', 'Ilość Kas', 'Data wstąpienia', 'Data wystąpienia',
                'Liczba Pracowników', 'Liczba Uczniow', 'Program Magazynowy', 'Standard promocji']
     column_settings = [{"header": column} for column in kolumny]
-    worksheet.add_table(0, max_col, max_row, max_col + max_col - 1,
+    worksheet.add_table(0, max_col+2, max_row, max_col + max_col - 1,
                         {"columns": column_settings, "data": temp_df.values.tolist()})
     formatdict = {'num_format': 'yyyy-mm-dd'}
     fmt = wrkbook.add_format(formatdict)
-    worksheet.set_column('Y:Z', None, fmt)
+    worksheet.set_column('W:X', None, fmt)
     plt.pyplot.close(fig)
     lista_sr = df['Nazwa_Spolki'].unique()
     for sr in lista_sr:
@@ -128,15 +126,15 @@ def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbo
     temp_df['data_wystapienia'] = temp_df['data_wystapienia'].astype(object).where(
         temp_df['data_wystapienia'].notnull(), None)
     (max_row, max_col) = temp_df.shape
-    kolumny = ['ID Sklepu', 'Nazwa Sklepu', 'Nazwa Spółki', 'Standard Sklepu', 'Format sklepu', 'Województwo',
+    kolumny = ['ID Sklepu', 'Nazwa Sklepu', 'Nazwa Spółki', 'Format sklepu',
                'Powierzchnia Sali', 'Powierzchnia Ogółem', 'Ilość Kas', 'Data wstąpienia', 'Data wystąpienia',
                'Liczba Pracowników', 'Liczba Uczniow', 'Program Magazynowy', 'Standard promocji']
     column_settings = [{"header": column} for column in kolumny]
-    worksheet.add_table(0, max_col, max_row, max_col + max_col - 1,
+    worksheet.add_table(0, max_col+2, max_row, max_col + max_col - 1,
                         {"columns": column_settings, "data": temp_df.values.tolist()})
     formatdict = {'num_format': 'yyyy-mm-dd'}
     fmt = wrkbook.add_format(formatdict)
-    worksheet.set_column('Y:Z', None, fmt)
+    worksheet.set_column('W:X', None, fmt)
     imgdata = io.BytesIO()
     fig.savefig(imgdata, format='png')
     worksheet.insert_image(0, 0, '', {'image_data': imgdata})
