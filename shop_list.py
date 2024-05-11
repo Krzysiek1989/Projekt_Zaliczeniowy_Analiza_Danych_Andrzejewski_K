@@ -93,7 +93,8 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
         plt.pyplot.close()
     wrkbook.close()
 
-def save_copy_for_sr(nazwa_spolki : str, image_data : io.BytesIO, nazwa_pliku: str)->None:
+
+def save_copy_for_sr(nazwa_spolki: str, image_data: io.BytesIO, nazwa_pliku: str) -> None:
     file_name = Path(f'./output/SR/{nazwa_spolki}/{nazwa_pliku}.png')
     with open(file_name, 'wb') as f:
         f.write(image_data.getbuffer())
