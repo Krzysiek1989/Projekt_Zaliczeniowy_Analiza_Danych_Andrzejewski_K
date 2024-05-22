@@ -1,5 +1,8 @@
 import glob
 import pandas as pd
+from _datetime import datetime
+
+from pandas import DataFrame
 
 path = r"./source/shop_sale/"
 list_of_files = glob.glob(path + '*.{}'.format('csv'))
@@ -66,7 +69,28 @@ def save_report_for_fb(df_sr_ok: pd.DataFrame, df_sr_error: pd.DataFrame) -> Non
             df_sr_error.to_excel(writer_fb, sheet_name='Błędy w danych sprzedażowych', index=False)
 
 
+def level_of_data_completion(level_df : pd.DataFrame)-> pd.DataFrame:
+    level_df = level_df.drop(columns=['shop_zn_all', 'shop_sb_all', 'shop_sn_all'])
+    grouped_data = level_df.groupby(['Shop_ID', 'data', 'Nazwa_Spolki']).count().reset_index()
+    pv_table: DataFrame = grouped_data.pivot_table(index='Shop_ID', columns=['data'], aggfunc='count', fill_value=0)
+    pv_table.columns = [''.join(str(s).strip().replace('Nazwa_Spolki', '').replace('00:00:00', '') for s in col if s) for
+                    col in pv_table.columns]
+    pv_table = pv_table.reset_index()
+    final_table = pv_table.merge(grouped_data[['Shop_ID', 'Nazwa_Spolki']])
+    order_cols = list(final_table.columns)
+    order_cols = [order_cols[-1]]+order_cols[:-1]
+    final_table = final_table[order_cols]
+    final_table = final_table.drop_duplicates(subset='Shop_ID', keep='last')
+    return final_table
+
+
+def save_completion_report(df_completion: pd.DataFrame)->None:
+    df_completion = df_completion.style.map(lambda x:'background-color : blue' if x==1 else ('background-color : red' if x==0 else 'background-color : white'))
+    df_completion.to_excel('./output/LH/Poziom_uzupelnienia_danych.xlsx', sheet_name='Poziom_danych', index=False)
+
+
 if __name__ == "__main__":
+    print(f"Program uruchomiono: {datetime.now()}")
     summed_turnover = pd.DataFrame()
     list_of_shops = pd.read_csv(f"./source/shop_list/list_of_shops.csv", sep=',')
     for file in list_of_files:
@@ -89,4 +113,7 @@ if __name__ == "__main__":
     summed_turnover.to_excel(writer, sheet_name="Obroty", index=False)
     writer.close()
     save_turnover_to_sr(summed_turnover)
+    lvl_of_completion = (level_of_data_completion(summed_turnover))
+    save_completion_report(lvl_of_completion)
+    print(f"Program zakończono: {datetime.now()}")
 
