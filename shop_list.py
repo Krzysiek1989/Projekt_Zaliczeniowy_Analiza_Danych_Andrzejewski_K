@@ -55,7 +55,7 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
     worksheet = wrkbook.add_worksheet('Lista-aktywnych-sklepów')
     imgdata = io.BytesIO()
     fig.savefig(imgdata, format='png')
-    worksheet.insert_image(0, 0, '', {'image_data': imgdata})
+    worksheet.insert_image(0, 14, '', {'image_data': imgdata})
     temp_df = df[pd.isnull(df['data_wystapienia']) & pd.notnull(df['data_wstapienia'])]
     temp_df = temp_df.drop(columns=['ws_year', 'ws_month', 'wy_year', 'wy_month'])
     temp_df['data_wystapienia'] = temp_df['data_wystapienia'].astype(object).where(
@@ -65,7 +65,7 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
                'Powierzchnia Sali', 'Powierzchnia Ogółem', 'Ilość Kas', 'Data wstąpienia', 'Data wystąpienia',
                'Liczba Pracowników', 'Liczba Uczniow', 'Program Magazynowy', 'Standard promocji']
     column_settings = [{"header": column} for column in kolumny]
-    worksheet.add_table(0, max_col+2, max_row, max_col + max_col - 1,
+    worksheet.add_table(0, 0, max_row, max_col-1,
                         {"columns": column_settings, "data": temp_df.values.tolist()})
     formatdict = {'num_format': 'yyyy-mm-dd'}
     fmt = wrkbook.add_format(formatdict)
@@ -131,14 +131,14 @@ def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbo
                'Powierzchnia Sali', 'Powierzchnia Ogółem', 'Ilość Kas', 'Data wstąpienia', 'Data wystąpienia',
                'Liczba Pracowników', 'Liczba Uczniow', 'Program Magazynowy', 'Standard promocji']
     column_settings = [{"header": column} for column in kolumny]
-    worksheet.add_table(0, max_col+2, max_row, max_col + max_col - 1,
+    worksheet.add_table(0, 0, max_row, max_col - 1,
                         {"columns": column_settings, "data": temp_df.values.tolist()})
     formatdict = {'num_format': 'yyyy-mm-dd'}
     fmt = wrkbook.add_format(formatdict)
-    worksheet.set_column('W:X', None, fmt)
+    worksheet.set_column('H:I', None, fmt)
     imgdata = io.BytesIO()
     fig.savefig(imgdata, format='png')
-    worksheet.insert_image(0, 0, '', {'image_data': imgdata})
+    worksheet.insert_image(0, 14, '', {'image_data': imgdata})
     save_copy_for_sr(sr, imgdata, f'Historia sklepow sieci Lewiatan {sr}')
 
 

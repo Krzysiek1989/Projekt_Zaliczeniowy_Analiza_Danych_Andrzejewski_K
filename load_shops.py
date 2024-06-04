@@ -96,6 +96,9 @@ def level_of_data_completion(level_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def save_completion_report(df_completion: pd.DataFrame) -> None:
+    """Na podstawie df generowany jest plik excel zawierający raport uzupełnienia danych na sklepie
+     w miesiącu kalendarzowym. Kolorem niebieskim oznaczono sprzedaż sklepu w danym dni,
+     kolorem czerwonym oznaczono brak sprzedaży w dniu"""
     df_completion = df_completion.style.map(lambda x: 'background-color : blue' if x == 1 else ('background-color : red'
                                                                                                 if x == 0 else
                                                                                                 'background-color : '
@@ -105,11 +108,16 @@ def save_completion_report(df_completion: pd.DataFrame) -> None:
 
 
 def load_promotions(file_string: str) -> pd.DataFrame:
+    """Import danych z definicjami promocji do dataframe"""
     temp_df = pd.read_csv(file_string, sep=',')
     return temp_df
 
 
 def prepare_promotions_report(promotions_df: pd.DataFrame, sales_dataf: pd.DataFrame) -> None:
+    """Przygotowanie raportu utrzymania cen promocyjnych na sklepie, na wejściu pobierany jest df z definicjami promoci
+    oraz sprzedażą na sklepie,
+    wynikiem jest plik excel z wyszczególnieniem sprzedaży towarów promocyjnych w poszczególnych dniach miesiąca
+    """
     regional_name_and_id = tuple(pd.unique(sales_dataf[['Nazwa_Spolki', 'Shop_ID']].values.ravel()))
     promotions_df = promotions_df[promotions_df['Spolka'] == regional_name_and_id[0]]
     sales_dataf['Kod'] = sales_dataf['Kod'].astype(np.int64)
@@ -121,6 +129,23 @@ def prepare_promotions_report(promotions_df: pd.DataFrame, sales_dataf: pd.DataF
                          index=False, header=['Typ promocji', 'Nazwa promocji', 'Data od', 'Data do', 'Spółka',
                                               'EAN produktu', 'Cena brutto - półka', 'Status towaru', 'ID Sklepu',
                                               'Cena sprzedaży brutto na sklepie', 'Data sprzedaży na sklepie'])
+
+
+def generate_top_min_10_shops(summed_df: pd.DataFrame) -> None:
+    """Funkcja generuje listę top 10/ min 10 sklepów per Spółka,
+    raporty zapisywane w pliku excel w oddzielnych arkuszach"""
+    regional_list = summed_df['Nazwa_Spolki'].unique()
+    for sr in regional_list:
+        temp_top_min = summed_df[summed_df['Nazwa_Spolki'] == sr] \
+            .groupby(['Nazwa_Spolki', 'Shop_ID'])['shop_sn_all'].sum().reset_index(name='wartosc')
+        top_10 = temp_top_min.nlargest(10, 'wartosc')
+        min_10 = temp_top_min.nsmallest(10, 'wartosc')
+        with (pd.ExcelWriter(f'./output/SR/{sr}/Top_Min_10_sklepów_ze_sprzedażą.xlsx', engine='xlsxwriter') as
+              writer_top_min):
+            top_10.style.to_excel(writer_top_min, sheet_name="TOP 10",
+                                  index=False, header=['Nazwa Spólki', 'ID sklepu', 'Sprzedaż netto za miesiąc'])
+            min_10.style.to_excel(writer_top_min, sheet_name='MIN 10',
+                                  index=False, header=['Nazwa Spólki', 'ID sklepu', 'Sprzedaż netto za miesiąc'])
 
 
 if __name__ == "__main__":
@@ -136,7 +161,7 @@ if __name__ == "__main__":
         sales_df = reorder_sr_column(sales_df)
         df_error = sales_df[sales_df['shop_sb_all'] >= int(10000)]
         sales_df_wo_errors = sales_df.drop(df_error.index, axis=0)
-        save_report_for_fb(sales_df_wo_errors, df_error)
+        #        save_report_for_fb(sales_df_wo_errors, df_error)
         promo_df = load_promotions('./source/shop_promotion/lewiatan_promotions.csv')
         prepare_promotions_report(promo_df, sales_df_wo_errors)
         grouped_values_turnover_per_month = sales_df_wo_errors.groupby(['Nazwa_Spolki', 'Shop_ID', 'data'])[
@@ -154,4 +179,5 @@ if __name__ == "__main__":
     save_turnover_to_sr(summed_turnover)
     lvl_of_completion = (level_of_data_completion(summed_turnover))
     save_completion_report(lvl_of_completion)
+    generate_top_min_10_shops(summed_turnover)
     print(f"Program zakończono: {datetime.now()}")
