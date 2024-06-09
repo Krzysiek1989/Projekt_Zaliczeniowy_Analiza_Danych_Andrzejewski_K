@@ -2,7 +2,8 @@ import shop_list as sl
 import load_shops as loads
 import pandas as pd
 
-if __name__ == "__main__":
+
+def main() -> None:
     list_of_shop_file = (f"./source/shop_list"
                          "/list_of_shops.csv")
     list_of_shops_df = sl.load_df_from_csv(list_of_shop_file)
@@ -10,11 +11,12 @@ if __name__ == "__main__":
     list_of_shops_df = sl.format_and_fill_shop_list_df(list_of_shops_df)
     lista_spolek = list_of_shops_df['Nazwa_Spolki'].unique()
     workbook = sl.xlsxwriter.Workbook(f'./output/LH'
-                                   '/Histora-sieci-sklepów-Lewiatan.xlsx', {"nan_inf_to_errors": True})
+                                      '/Histora-sieci-sklepów-Lewiatan.xlsx', {"nan_inf_to_errors": True})
     for spolka in lista_spolek:
         print(f"Szykuję dane dla Spółki {spolka}")
         sl.generate_history_graph(spolka, list_of_shops_df, workbook)
-        sl.save_shop_list_for_sr(spolka, list_of_shops_df[list_of_shops_df['Nazwa_Spolki'] == spolka].drop(columns=['ws_year', 'ws_month', 'wy_year', 'wy_month']))
+        sl.save_shop_list_for_sr(spolka, list_of_shops_df[list_of_shops_df['Nazwa_Spolki'] == spolka].drop(
+            columns=['ws_year', 'ws_month', 'wy_year', 'wy_month']))
     workbook.close()
     sl.generate_active_shop_graph(list_of_shops_df)
     summed_turnover = pd.DataFrame()
@@ -46,3 +48,7 @@ if __name__ == "__main__":
     lvl_of_completion = (loads.level_of_data_completion(summed_turnover))
     loads.save_completion_report(lvl_of_completion)
     loads.generate_top_min_10_shops(summed_turnover)
+
+
+if __name__ == "__main__":
+    main()
