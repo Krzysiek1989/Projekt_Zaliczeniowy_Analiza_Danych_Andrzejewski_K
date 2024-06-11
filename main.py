@@ -4,6 +4,7 @@ import pandas as pd
 
 
 def main() -> None:
+    """Główna funkcja"""
     list_of_shop_file = (f"./source/shop_list"
                          "/list_of_shops.csv")
     temp_shop_list_df = sl.load_df_from_csv(list_of_shop_file)

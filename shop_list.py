@@ -95,6 +95,7 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
 
 
 def save_copy_for_sr(nazwa_spolki: str, image_data: io.BytesIO, nazwa_pliku: str) -> None:
+    """Funkcja zapisuje kopie wygenerowanych grafik w strukturze plików przeznaczonych dla SR"""
     file_name = Path(f'./output/SR/{nazwa_spolki}/{nazwa_pliku}.png')
     with open(file_name, 'wb') as f:
         f.write(image_data.getbuffer())
@@ -143,6 +144,7 @@ def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbo
 
 
 def save_shop_list_for_sr(nazwa_spolki: str, data_frame: pd.DataFrame) -> None:
+    """Funkcja zapisuje listę aktywnych sklepów w strukturze plików przeznaczonych dla Spółek Regionalnych"""
     file_name = Path(f'./output/SR/{nazwa_spolki}/Lista_sklepow_sieci_Lewiatan_{nazwa_spolki}.xlsx')
     data_frame['data_wstapienia'] = pd.to_datetime(data_frame['data_wstapienia'], format='yyyy-mm-dd', errors='ignore')
     data_frame.to_excel(file_name, index=False, header=['ID Sklepu', 'Nazwa Sklepu', 'Nazwa Spółki', 'Format Sklepu', 'Powierzchnia Sali', 'Powierzchnia Ogółem', 'Ilość kas', 'Data wstąpienia', 'Data wystąpienia', 'Liczba pracowników', 'Liczba uczniów', 'Program Magazynowy', 'Standard promocji'])
