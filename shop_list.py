@@ -69,7 +69,7 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
                         {"columns": column_settings, "data": temp_df.values.tolist()})
     formatdict = {'num_format': 'yyyy-mm-dd'}
     fmt = wrkbook.add_format(formatdict)
-    worksheet.set_column('W:X', None, fmt)
+    worksheet.set_column('H:I', None, fmt)
     plt.pyplot.close(fig)
     lista_sr = df['Nazwa_Spolki'].unique()
     for sr in lista_sr:
@@ -100,7 +100,7 @@ def save_copy_for_sr(nazwa_spolki: str, image_data: io.BytesIO, nazwa_pliku: str
         f.write(image_data.getbuffer())
 
 
-def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbook):
+def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbook) -> None:
     """Skrypt generuje na podstawie nazwy spółki, tabeli oraz łącza do pliku graf oraz dane na podstawie których go
     zbudowano. Wszystko zapisywane jest w arkuszu z nazwą spółki"""
     group_wstapienie = df.groupby(['Nazwa_Spolki', 'ws_year'], observed=True)['Nazwa_Spolki'].count().reset_index(
@@ -144,4 +144,5 @@ def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbo
 
 def save_shop_list_for_sr(nazwa_spolki: str, data_frame: pd.DataFrame) -> None:
     file_name = Path(f'./output/SR/{nazwa_spolki}/Lista_sklepow_sieci_Lewiatan_{nazwa_spolki}.xlsx')
-    data_frame.to_excel(file_name, index=False)
+    data_frame['data_wstapienia'] = pd.to_datetime(data_frame['data_wstapienia'], format='yyyy-mm-dd', errors='ignore')
+    data_frame.to_excel(file_name, index=False, header=['ID Sklepu', 'Nazwa Sklepu', 'Nazwa Spółki', 'Format Sklepu', 'Powierzchnia Sali', 'Powierzchnia Ogółem', 'Ilość kas', 'Data wstąpienia', 'Data wystąpienia', 'Liczba pracowników', 'Liczba uczniów', 'Program Magazynowy', 'Standard promocji'])

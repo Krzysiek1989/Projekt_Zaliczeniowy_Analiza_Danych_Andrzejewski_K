@@ -6,8 +6,8 @@ import pandas as pd
 def main() -> None:
     list_of_shop_file = (f"./source/shop_list"
                          "/list_of_shops.csv")
-    list_of_shops_df = sl.load_df_from_csv(list_of_shop_file)
-    list_of_shops_df = sl.clean_shop_df(list_of_shops_df)
+    temp_shop_list_df = sl.load_df_from_csv(list_of_shop_file)
+    list_of_shops_df = sl.clean_shop_df(temp_shop_list_df)
     list_of_shops_df = sl.format_and_fill_shop_list_df(list_of_shops_df)
     lista_spolek = list_of_shops_df['Nazwa_Spolki'].unique()
     workbook = sl.xlsxwriter.Workbook(f'./output/LH'
@@ -25,7 +25,7 @@ def main() -> None:
         sales_df = loads.load_sales_to_df(file)
         sales_df = loads.calculate_shop_sales(sales_df)
         sales_df['data'] = pd.to_datetime(sales_df['data'], format='yyyy-mm-dd')
-        sales_df = loads.add_sr_name(sales_df, loads.list_of_shops)
+        sales_df = loads.add_sr_name(sales_df, temp_shop_list_df)
         sales_df = loads.reorder_sr_column(sales_df)
         df_error = sales_df[sales_df['shop_sb_all'] >= int(10000)]
         sales_df_wo_errors = sales_df.drop(df_error.index, axis=0)

@@ -55,7 +55,9 @@ def save_turnover_to_sr(sum_df: pd.DataFrame) -> None:
         writer_sr = pd.ExcelWriter(f"./output/SR/{sr}/Obroty_{sr}.xlsx", engine='xlsxwriter',
                                    date_format='%Y-%m-%d',
                                    datetime_format='YYYY-MM-DD')
-        temp_df.to_excel(writer_sr, sheet_name="Obroty", index=False)
+        temp_df.to_excel(writer_sr, sheet_name="Obroty", index=False,
+                         header=['Nazwa Spółki', 'ID Sklepu', 'Data sprzedaży', 'Wartość sprzedaży w cenie zakupu',
+                                 'Wartość sprzedaży brutto', 'Wartość sprzedaży netto'])
         writer_sr.close()
 
 
@@ -128,7 +130,8 @@ def prepare_promotions_report(promotions_df: pd.DataFrame, sales_dataf: pd.DataF
     promo_cover.to_excel(f'./output/SR/{regional_name_and_id[0]}/promocje_{regional_name_and_id[1]}.xlsx',
                          index=False, header=['Typ promocji', 'Nazwa promocji', 'Data od', 'Data do', 'Spółka',
                                               'EAN produktu', 'Cena brutto - półka', 'Status towaru', 'ID Sklepu',
-                                              'Cena sprzedaży brutto na sklepie', 'Data sprzedaży na sklepie'])
+                                              'Cena sprzedaży brutto na sklepie', 'Data sprzedaży na sklepie'],
+                         sheet_name='Analiza promocji sklepu')
 
 
 def generate_top_min_10_shops(summed_df: pd.DataFrame) -> None:
@@ -142,42 +145,11 @@ def generate_top_min_10_shops(summed_df: pd.DataFrame) -> None:
         min_10 = temp_top_min.nsmallest(10, 'wartosc')
         with (pd.ExcelWriter(f'./output/SR/{sr}/Top_Min_10_sklepów_ze_sprzedażą.xlsx', engine='xlsxwriter') as
               writer_top_min):
-            top_10.style.to_excel(writer_top_min, sheet_name="TOP 10",
-                                  index=False, header=['Nazwa Spólki', 'ID sklepu', 'Sprzedaż netto za miesiąc'])
-            min_10.style.to_excel(writer_top_min, sheet_name='MIN 10',
-                                  index=False, header=['Nazwa Spólki', 'ID sklepu', 'Sprzedaż netto za miesiąc'])
-
-
-if __name__ == "__main__":
-    print(f"Program uruchomiono: {datetime.now()}")
-    summed_turnover = pd.DataFrame()
-    list_of_shops = pd.read_csv(f"./source/shop_list/list_of_shops.csv", sep=',')
-    for file in list_of_files:
-        print(f'Przetwarzam plik: {file}')
-        sales_df = load_sales_to_df(file)
-        sales_df = calculate_shop_sales(sales_df)
-        sales_df['data'] = pd.to_datetime(sales_df['data'], format='yyyy-mm-dd')
-        sales_df = add_sr_name(sales_df, list_of_shops)
-        sales_df = reorder_sr_column(sales_df)
-        df_error = sales_df[sales_df['shop_sb_all'] >= int(10000)]
-        sales_df_wo_errors = sales_df.drop(df_error.index, axis=0)
-        #        save_report_for_fb(sales_df_wo_errors, df_error)
-        promo_df = load_promotions('./source/shop_promotion/lewiatan_promotions.csv')
-        prepare_promotions_report(promo_df, sales_df_wo_errors)
-        grouped_values_turnover_per_month = sales_df_wo_errors.groupby(['Nazwa_Spolki', 'Shop_ID', 'data'])[
-            ['shop_zn_all', 'shop_sb_all', 'shop_sn_all']].sum().reset_index()
-        grouped_values_turnover_per_month = grouped_values_turnover_per_month.round(2)
-        temp = pd.concat([summed_turnover, grouped_values_turnover_per_month])
-        summed_turnover = temp
-    writer = pd.ExcelWriter('./output/LH/Obroty.xlsx', engine='xlsxwriter', date_format='%Y-%m-%d',
-                            datetime_format='YYYY-MM-DD')
-    summed_turnover.to_excel(writer, sheet_name="Obroty", index=False, header=['Nazwa Spółki', 'ID sklepu', 'Data',
-                                                                               'Sprzedaż w cenie zakupu',
-                                                                               'Sprzedaż brutto całkowita',
-                                                                               'Sprzedaż netto całkowita'])
-    writer.close()
-    save_turnover_to_sr(summed_turnover)
-    lvl_of_completion = (level_of_data_completion(summed_turnover))
-    save_completion_report(lvl_of_completion)
-    generate_top_min_10_shops(summed_turnover)
-    print(f"Program zakończono: {datetime.now()}")
+            top_10.style.highlight_max(
+                props='color:white; font-weight:bold; background-color:darkred;',
+                subset=['wartosc']).to_excel(writer_top_min, sheet_name="TOP 10", index=False,
+                                             header=['Nazwa Spólki', 'ID sklepu', 'Sprzedaż netto za miesiąc'])
+            min_10.style.highlight_min(
+                props='color:white; font-weight:bold; background-color:darkred;',
+                subset=['wartosc']).to_excel(writer_top_min, sheet_name='MIN 10', index=False,
+                                             header=['Nazwa Spólki', 'ID sklepu', 'Sprzedaż netto za miesiąc'])
