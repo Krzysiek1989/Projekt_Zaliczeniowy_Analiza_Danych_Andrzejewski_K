@@ -101,10 +101,8 @@ def save_completion_report(df_completion: pd.DataFrame) -> None:
     """Na podstawie df generowany jest plik excel zawierający raport uzupełnienia danych na sklepie
      w miesiącu kalendarzowym. Kolorem niebieskim oznaczono sprzedaż sklepu w danym dni,
      kolorem czerwonym oznaczono brak sprzedaży w dniu"""
-    df_completion = df_completion.style.map(lambda x: 'background-color : blue' if x == 1 else ('background-color : red'
-                                                                                                if x == 0 else
-                                                                                                'background-color : '
-                                                                                                'white'))
+    df_completion = df_completion.style.map(lambda x: f'background-color : slateblue; color: slateblue; border: 1px solid black' if x == 1 else
+    (f'background-color : indianred; color: indianred; border: 1px solid black' if x == 0 else 'background-color : white'))
     df_completion.to_excel('./output/LH/Poziom_uzupelnienia_danych.xlsx', sheet_name='Poziom_danych',
                            index=False)
 

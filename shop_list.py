@@ -1,6 +1,5 @@
 import io
 from pathlib import Path
-
 import pandas as pd
 import seaborn as sns
 import matplotlib as plt
@@ -47,7 +46,7 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
                                   '/Aktywne-sklepy-sieci-Lewiatan.xlsx', {"nan_inf_to_errors": True})
     fig, ax = plt.pyplot.subplots(figsize=(10, 10))
     ax.set(xlabel='Ilość aktywnych sklepów', ylabel='Nazwa Spółki')
-    ax.set_title(f"Ilość aktywnych sklepów w spółkach sieci Lewiatan")
+    ax.set_title(f"Ilość aktywnych sklepów w spółkach sieci Lewiatan", fontsize=20)
     sns.countplot(y='Nazwa_Spolki', data=df[pd.isnull(df['data_wystapienia']) & pd.notnull(df['data_wstapienia'])],
                   order=df.Nazwa_Spolki.value_counts().index.sort_values(ascending=True))
     for container in ax.containers:
@@ -83,9 +82,8 @@ def generate_active_shop_graph(df: pd.DataFrame) -> None:
         plt.pyplot.figure(figsize=(10, 10))
         print(f"Tworzę graf kołowy dla Spółki {sr}")
         plt.pyplot.pie(temp['Format_Sklepu'].value_counts(), autopct=fmt,
-                       textprops={'fontsize': 13}, labels=temp['Format_Sklepu'].value_counts().index, startangle=90)
-        plt.pyplot.title(f'Lewiatan {sr} struktura aktywnych sklepów według formatu.')
-        plt.pyplot.legend(temp['Format_Sklepu'].unique(), loc='upper left', title='Formaty sklepów')
+                       textprops={'fontsize': 20}, labels=temp['Format_Sklepu'].value_counts().index, startangle=90)
+        plt.pyplot.title(f'Lewiatan {sr} struktura aktywnych sklepów według formatu.', fontsize=20)
         imgdata = io.BytesIO()
         plt.pyplot.savefig(imgdata, format='png')
         worksheet.insert_image(0, 0, '', {'image_data': imgdata})
@@ -110,14 +108,14 @@ def generate_history_graph(sr: str, df: pd.DataFrame, wrkbook: xlsxwriter.Workbo
         name='nmb_of_occurences')
     fig, ax = plt.pyplot.subplots(figsize=(10, 10))
     sns.barplot(x=group_wstapienie['ws_year'], y="nmb_of_occurences",
-                data=group_wstapienie[group_wstapienie['Nazwa_Spolki'] == sr], ax=ax, color="green",
+                data=group_wstapienie[group_wstapienie['Nazwa_Spolki'] == sr], ax=ax, color="#44d625",
                 errorbar=None)
     sns.barplot(x=group_wystapienie['wy_year'], y="nmb_of_occurences",
-                data=group_wystapienie[group_wystapienie['Nazwa_Spolki'] == sr], ax=ax, color="red",
+                data=group_wystapienie[group_wystapienie['Nazwa_Spolki'] == sr], ax=ax, color="#d8a79e",
                 errorbar=None, width=.25)
     ax.legend(title='', loc='upper left', labels=['Wstąpienie sklepu', 'Wystąpienie sklepu'])
     ax.set(xlabel='Rok', ylabel='Liczba sklepów')
-    ax.set_title(f"Ilość wstąpień i wystąpień sklepów sieci Lewiatan {sr} na przestrzeni lat")
+    ax.set_title(f"Ilość wstąpień i wystąpień sklepów sieci Lewiatan {sr} na przestrzeni lat", fontsize=20, wrap=True)
     for container in ax.containers:
         ax.bar_label(container)
     plty.xticks(rotation=90)
